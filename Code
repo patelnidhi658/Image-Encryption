@@ -20,3 +20,37 @@ encrypted_data = cipher.iv + cipher.encrypt(padded_data)
 # Save the encrypted data to a file
 with open('encrypted_image.bin', 'wb') as f:
     f.write(encrypted_data)
+    
+#To decrypt the image, you can use the following code:
+
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+import numpy as np
+from PIL import Image
+
+# Load encrypted data
+with open('encrypted_image.bin', 'rb') as f:
+    encrypted_data = f.read()
+
+# Extract the initialization vector and encrypted data
+iv = encrypted_data[:AES.block_size]
+encrypted_image_data = encrypted_data[AES.block_size:]
+
+# Generate a key
+key = b'This is a secret key'
+
+# Decrypt the data using AES with CBC mode
+cipher = AES.new(key, AES.MODE_CBC, iv)
+padded_data = cipher.decrypt(encrypted_image_data)
+
+# Unpad the decrypted data
+unpadded_data = unpad(padded_data, AES.block_size)
+
+# Reshape the data to match the original image dimensions
+image_data = np.frombuffer(unpadded_data, dtype=np.uint8)
+image_data = np.reshape(image_data, (height, width, channels))
+
+# Save the decrypted image
+image = Image.fromarray(image_data)
+image.save('decrypted_image.png')
+
