@@ -1,0 +1,22 @@
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
+from PIL import Image
+import numpy as np
+
+# Load image
+image = Image.open('image.png')
+image_data = np.array(image)
+
+# Generate a key
+key = b'This is a secret key'
+
+# Pad the data to match the block size of AES
+padded_data = pad(image_data.tobytes(), AES.block_size)
+
+# Encrypt the data using AES with CBC mode
+cipher = AES.new(key, AES.MODE_CBC)
+encrypted_data = cipher.iv + cipher.encrypt(padded_data)
+
+# Save the encrypted data to a file
+with open('encrypted_image.bin', 'wb') as f:
+    f.write(encrypted_data)
